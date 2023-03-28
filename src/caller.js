@@ -1,4 +1,4 @@
-(async function () {
+async function readRemoteTests() {
     const {writeIntoFile, toJson} = require("./helpers/file-helper.js")
     const TestRail = require('@dlenroc/testrail');
     const api = new TestRail({
@@ -37,5 +37,6 @@
         tags: (c[FIELD_TAG] || []).map(id => tags.get(id)).join(', ')
     })).map(test => toJson(test)).join(",\n") + "]"
     writeIntoFile(allTests, reportPath)
+}
 
-})();
+module.exports = {readRemoteTests}

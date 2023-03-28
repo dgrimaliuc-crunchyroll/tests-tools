@@ -1,4 +1,4 @@
-(async function () {
+async function updateTestStatus() {
     const TestRail = require('@dlenroc/testrail');
     const {execSync: exec} = require('child_process');
     const {getCasesIds} = require("./helpers/tests-helper.js")
@@ -70,4 +70,6 @@
                 })
         })
     }
-})();
+}
+
+module.exports = {updateTestStatus}

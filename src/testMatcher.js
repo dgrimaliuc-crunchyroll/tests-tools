@@ -1,4 +1,4 @@
-(async function () {
+async function createTxtReports() {
     const {writeIntoFile} = require("./helpers/file-helper.js");
     const {
         prepareRenderData,
@@ -106,4 +106,6 @@
             createReports(localTests, remoteTests)
         }
     }
-})();
+}
+
+module.exports = {createTxtReports}

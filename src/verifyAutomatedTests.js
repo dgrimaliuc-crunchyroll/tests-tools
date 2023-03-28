@@ -1,4 +1,4 @@
-(async function () {
+async function verifyAutomatedTests() {
     const {getUpdatedTestCases, getAddedTestCases} = require("./helpers/tests-helper.js");
     const {sync: glob} = require('fast-glob');
     const {readFileSync} = require('fs');
@@ -30,5 +30,6 @@
                 result.set(t, {"duplicate": duplicates.split("\n").find(l => l.includes(t))})
             })
     }
+}
 
-})();
+module.exports = {verifyAutomatedTests}
