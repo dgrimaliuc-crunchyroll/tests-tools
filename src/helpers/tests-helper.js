@@ -1,10 +1,11 @@
 const {sync: glob} = require("fast-glob");
 const {readFileSync} = require("fs");
-const {writeIntoFile, readFile} = require("./file-helper.js");
+const {writeIntoFile, readFile} = require("./file-helper");
+const {localTestReportPath} = require("./constants");
 const {execSync: exec} = require('child_process');
 const testCaseAnnotationPattern = /@?TestCases?\s*\([\s\S]*?\)/g;
 let methodRegexPattern = /[+\- ](\s*)?@[TP]\w+\s+(`?)(.+?)\2\s*\([\S\s]+?\n[+\- ]\1}/g;
-const localTestReportPath = "project/resources/report/localTests.txt"
+
 
 function sortedDistinct(arr) {
     return [...new Set(arr)].sort()

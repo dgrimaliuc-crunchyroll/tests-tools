@@ -13,7 +13,7 @@ function readFile(filePath) {
     if (!fs.existsSync(filePath)) {
         let foundFiles = glob(`**/${filePath}`)
         if (foundFiles) {
-            throw `File doesn't exists: '${filePath}'s`;
+            throw `File doesn't exists: '${filePath}'`;
         } else filePath = foundFiles[0]
     }
     return fs.readFileSync(filePath, 'utf-8');
