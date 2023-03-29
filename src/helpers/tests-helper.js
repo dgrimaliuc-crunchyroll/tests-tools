@@ -45,10 +45,12 @@ function readLocalTests(terminal) {
     const commentPattern = /\/\/.+/g;
     const multilineCommentPattern = /\/\*[\s\S]*?\*\//g;
     for (const file of glob('**/*.kt')) {
-        const content = readFileSync(file, 'utf-8')
-            .replace(commentPattern, '')
-            .replace(multilineCommentPattern, '');
-        renderTests(content, terminal);
+        if (!file.startsWith("target/")) {
+            const content = readFileSync(file, 'utf-8')
+                .replace(commentPattern, '')
+                .replace(multilineCommentPattern, '');
+            renderTests(content, terminal);
+        }
     }
 }
 

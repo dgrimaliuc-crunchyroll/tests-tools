@@ -2,7 +2,12 @@ const {sync: glob} = require('fast-glob');
 const fs = require('fs');
 
 function writeIntoFile(string, filePath) {
-    fs.writeFile(filePath, string, function (err) {
+    if (!fs.existsSync(filePath)) {
+        fs.mkdir(filePath.substring(0, filePath.lastIndexOf("/") + 1),
+            {recursive: true},
+            (err) => console.log(err));
+    }
+    fs.writeFileSync(filePath, string, err => {
         if (err) {
             throw `Can not create or open: ${filePath} \n${err}`;
         }
