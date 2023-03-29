@@ -1,21 +1,22 @@
-function writeIntoFile(string, reportPath) {
-    const fs = require('fs');
-    if (!fs.existsSync("resources")) {
-        reportPath = "../../" + reportPath // may not work
-    }
-    fs.writeFile(reportPath, string, function (err) {
+const {sync: glob} = require('fast-glob');
+const fs = require('fs');
+
+function writeIntoFile(string, filePath) {
+    fs.writeFile(filePath, string, function (err) {
         if (err) {
-            throw `Can not create or open: ${reportPath} \n${err}`;
+            throw `Can not create or open: ${filePath} \n${err}`;
         }
     });
 }
 
-function readFile(reportPath) {
-    const fs = require('fs');
-    if (!fs.existsSync("resources")) {
-        reportPath = "../../" + reportPath
+function readFile(filePath) {
+    if (!fs.existsSync(filePath)) {
+        let foundFiles = glob(`**/${filePath}`)
+        if (foundFiles) {
+            throw `File doesn't exists: '${filePath}'s`;
+        } else filePath = foundFiles[0]
     }
-    return fs.readFileSync(reportPath, 'utf-8');
+    return fs.readFileSync(filePath, 'utf-8');
 }
 
 function toJson(subObject) {

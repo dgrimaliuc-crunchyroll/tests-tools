@@ -51,7 +51,7 @@ function spawnShell(reader, onClosure) {
         ))
 }
 
-module.exports = {createNodeChildProcess, spawnShell, Listeners, Reader}
+module.exports = {spawnShell, Listeners, Reader}
 
 
 

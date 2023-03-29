@@ -1,5 +1,7 @@
-async function createTxtReports() {
-    const {writeIntoFile} = require("./helpers/file-helper.js");
+async function createTxtReports(pathToTagsFile) {
+    const {writeIntoFile, readFile} = require("./helpers/file-helper.js");
+    const {tagReport, duplicateReport, unexistingReport, allTestsJsonPath} = require("./helpers/constants");
+    const {spawnShell, Reader} = require('./helpers/exec-child-helper.js')
     const {
         prepareRenderData,
         sortedDistinct,
@@ -8,20 +10,10 @@ async function createTxtReports() {
         parseTests,
         saveLocalTests
     } = require("./helpers/tests-helper.js");
-    const {spawnShell, Reader} = require('./helpers/exec-child-helper.js')
-    let tagsReport = "resources/report/tags.txt"
-    let duplicateReport = "resources/report/duplicates.txt"
-    let unexistingReport = "resources/report/unexisting.txt"
-    let notAutomatedReport = "resources/report/notAutomated.txt"
-    let archivedReport = "resources/report/archived.txt"
     let reader = new Reader()
+    findAllTestMethods(pathToTagsFile)
 
-    let allTestsJsonPath = "resources/all_tests.json"
-    const {readFile} = require("./helpers/file-helper.js")
-    let pathToTagsFile = "test/Tags.kt"
-    findAllTestMethods()
-
-    function findAllTestMethods() {
+    function findAllTestMethods(pathToTagsFile) {
         let terminal = spawnShell(reader, getRender())
         let actualTags = readFile(pathToTagsFile).replaceAll('val ', '')
         prepareRenderData(actualTags, terminal)
@@ -59,7 +51,7 @@ async function createTxtReports() {
                 }
             }
         })
-        writeIntoFile(invalidTagsTests.join("\n"), tagsReport)
+        writeIntoFile(invalidTagsTests.join("\n"), tagReport)
     }
 
     function findUnexisting(localTests, remoteTests) {

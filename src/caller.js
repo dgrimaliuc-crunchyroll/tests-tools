@@ -1,19 +1,19 @@
 async function readRemoteTests() {
     const {writeIntoFile, toJson} = require("./helpers/file-helper.js")
+    const {allTestsJsonPath} = require("./helpers/constants");
     const TestRail = require('@dlenroc/testrail');
     const api = new TestRail({
         host: process.env.TESTRAIL_HOST.replace(/"/g, ""),
         username: process.env.TESTRAIL_USERNAME,
         password: process.env.TESTRAIL_PASSWORD
     });
-    const PROJECT_NAME = "New Crunchyroll Web"
+
     const AUTOMATION_STATUS = "custom_chrome_automation_status"
     const FIELD_TAG = 'custom_testcase_tag';
     const projects = await api.getProjects();
-    const projectId = projects.filter(p => p.name === PROJECT_NAME)[0].id
-    const cases = await api.getCases(projectId);
+    const projectId = projects.filter(p => p.name === process.env.TESTRAIL_PROJECT_NAME)[0].id
     const fields = await api.getCaseFields();
-    let reportPath = "resources/all_tests.json";
+    const cases = await api.getCases(projectId);
 
     const tags = new Map([...fields.find(field => field.system_name === FIELD_TAG)
         .configs[0].options.items.matchAll(/^\s*(\d+)\s*,\s*(.+)\s*/mg)].map(m => [+m[1], m[2]]));
@@ -36,7 +36,7 @@ async function readRemoteTests() {
         refs: (c.refs ? c.refs : "").replace(/,/g, ";"),
         tags: (c[FIELD_TAG] || []).map(id => tags.get(id)).join(', ')
     })).map(test => toJson(test)).join(",\n") + "]"
-    writeIntoFile(allTests, reportPath)
+    writeIntoFile(allTests, allTestsJsonPath)
 }
 
 module.exports = {readRemoteTests}

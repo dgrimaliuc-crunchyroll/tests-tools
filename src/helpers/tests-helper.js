@@ -4,7 +4,7 @@ const {writeIntoFile, readFile} = require("./file-helper.js");
 const {execSync: exec} = require('child_process');
 const testCaseAnnotationPattern = /@?TestCases?\s*\([\s\S]*?\)/g;
 let methodRegexPattern = /[+\- ](\s*)?@[TP]\w+\s+(`?)(.+?)\2\s*\([\S\s]+?\n[+\- ]\1}/g;
-const localTestReportPath = "resources/report/localTests.txt"
+const localTestReportPath = "project/resources/report/localTests.txt"
 
 function sortedDistinct(arr) {
     return [...new Set(arr)].sort()
@@ -43,7 +43,7 @@ function parseTests(reader) {
 function readLocalTests(terminal) {
     const commentPattern = /\/\/.+/g;
     const multilineCommentPattern = /\/\*[\s\S]*?\*\//g;
-    for (const file of glob('../../**/*.kt')) {
+    for (const file of glob('**/*.kt')) {
         const content = readFileSync(file, 'utf-8')
             .replace(commentPattern, '')
             .replace(multilineCommentPattern, '');
