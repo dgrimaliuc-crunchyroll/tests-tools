@@ -1,4 +1,4 @@
-const folder = 'project/resources/report'
+const folder = 'resources/report'
 const tagReport = `${folder}/tags.txt`
 const duplicateReport = `${folder}/duplicates.txt`
 const unexistingReport = `${folder}/unexisting.txt`
