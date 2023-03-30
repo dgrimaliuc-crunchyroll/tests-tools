@@ -1,29 +1,15 @@
 async function createTxtReports(pathToTagsFile) {
-    const {writeIntoFile, readFile} = require("./helpers/file-helper.js");
-    const {tagReport, duplicateReport, unexistingReport, allTestsJsonPath} = require("./helpers/constants");
-    const {spawnShell, Reader} = require('./helpers/exec-child-helper.js')
-    const {
-        prepareRenderData,
-        sortedDistinct,
-        getExceptOrDefault,
-        readLocalTests,
-        parseTests,
-        saveLocalTests
-    } = require("./helpers/tests-helper.js");
-    let reader = new Reader()
-    findAllTestMethods(pathToTagsFile)
-
-    function findAllTestMethods(pathToTagsFile) {
-        let terminal = spawnShell(reader, getRender())
-        let actualTags = readFile(pathToTagsFile).replaceAll('val ', '')
-        prepareRenderData(actualTags, terminal)
-        readLocalTests(terminal)
-        terminal.stdin.write('console.log(JSON.stringify(Array.from(tests)))\n')
-        terminal.stdin.end();
-    }
+    const {getLocalTests, getRemoteTests} = require("./helpers/tests-helper");
+    const {writeIntoFile} = require("./helpers/file-helper.js");
+    const {saveLocalTests} = require("./helpers/tests-helper.js");
+    const {tagReport, duplicateReport, unexistingReport} = require("./helpers/constants");
+    let localTests = getLocalTests(pathToTagsFile)
+    let remoteTests = getRemoteTests(pathToTagsFile)
+    createReports(localTests, remoteTests)
 
 
     function createReports(localTests, remoteTests) {
+        console.log("Create txt reports")
         saveLocalTests(localTests)
         findUnexisting(localTests, remoteTests)
         findInvalidTags(localTests, remoteTests)
@@ -70,33 +56,6 @@ async function createTxtReports(pathToTagsFile) {
 
     function tagsLength(tags) {
         return tags.split(",").length
-    }
-
-    function getRender() {
-        return () => {
-            let localTests = parseTests(reader)
-
-            let remoteTests = JSON.parse(readFile(allTestsJsonPath).replaceAll(/[\n|\t]+/g, ''))
-                .map(t => {
-                    let addTagRes = [t.type]
-                    if (t.runInProd) {
-                        addTagRes.push("production")
-                    }
-                    if (t.runInCI) {
-                        addTagRes.push("ci")
-                    } else
-                        addTagRes.push("notCi")
-
-                    t.tags = sortedDistinct(t.tags
-                        .split(",")
-                        .concat(addTagRes)
-                        .map(f => getExceptOrDefault(f)))
-                        .join(",")
-                    return t
-
-                })
-            createReports(localTests, remoteTests)
-        }
     }
 }
 

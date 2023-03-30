@@ -2,6 +2,7 @@ const {sync: glob} = require('fast-glob');
 const fs = require('fs');
 
 function writeIntoFile(string, filePath) {
+    console.log(`Write into file ${filePath} content: ${string.substring(0, 100)}...`)
     if (!fs.existsSync(filePath)) {
         fs.mkdir(filePath.substring(0, filePath.lastIndexOf("/") + 1),
             {recursive: true},
@@ -15,6 +16,7 @@ function writeIntoFile(string, filePath) {
 }
 
 function readFile(filePath) {
+    console.log(`Reading file ${filePath}`)
     if (!fs.existsSync(filePath)) {
         let foundFiles = glob(`**/${filePath}`)
         if (foundFiles) {

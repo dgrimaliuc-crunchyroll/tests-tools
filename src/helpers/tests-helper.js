@@ -1,7 +1,7 @@
 const {sync: glob} = require("fast-glob");
 const {readFileSync} = require("fs");
 const {writeIntoFile, readFile} = require("./file-helper");
-const {localTestReportPath} = require("./constants");
+const {localTestReportPath, allTestsJsonPath} = require("./constants");
 const {execSync: exec} = require('child_process');
 const testCaseAnnotationPattern = /@?TestCases?\s*\([\s\S]*?\)/g;
 let methodRegexPattern = /[+\- ](\s*)?@[TP]\w+\s+(`?)(.+?)\2\s*\([\S\s]+?\n[+\- ]\1}/g;
@@ -26,32 +26,101 @@ function getExceptOrDefault(tag) {
         .get(tag.trim()) ?? tag.trim()
 }
 
-
-function saveLocalTests(content) {
-    writeIntoFile(content.map(it => `${it.id}: ${it.tag}`).join("\n"), localTestReportPath)
-}
-
-function parseTests(reader) {
-    return JSON.parse(reader.scriptOutput)
+function getRemoteTests() {
+    return JSON.parse(readFile(allTestsJsonPath).replaceAll(/[\n|\t]+/g, ''))
         .map(t => {
-            t.tag = sortedDistinct(t.tag.split(",")
+            let addTagRes = [t.type]
+            if (t.runInProd) {
+                addTagRes.push("production")
+            }
+            if (t.runInCI) {
+                addTagRes.push("ci")
+            } else
+                addTagRes.push("notCi")
+
+            t.tags = sortedDistinct(t.tags
+                .split(",")
+                .concat(addTagRes)
                 .map(f => getExceptOrDefault(f)))
                 .join(",")
             return t
+
         })
 }
 
-function readLocalTests(terminal) {
+function getLocalTests(actualTagsFile) {
+    const tests = [];
+
     const commentPattern = /\/\/.+/g;
     const multilineCommentPattern = /\/\*[\s\S]*?\*\//g;
+    let actualTags = readFile(actualTagsFile).replaceAll('val ', '')
     for (const file of glob('**/*.kt')) {
         if (!file.startsWith("target/")) {
             const content = readFileSync(file, 'utf-8')
                 .replace(commentPattern, '')
                 .replace(multilineCommentPattern, '');
-            renderTests(content, terminal);
+
+            [...content.matchAll(methodRegexPattern)]
+                .map(p => p.toString())
+                .filter(p => p.includes("@TestCase"))
+                .filter(p => p.includes("@Tags"))
+                .flatMap(method => {
+                    let ids = method.match(/TestCases?\(.+\)/g)[0]
+                    let tags = method.match(/Tags\((\n|\s|\w|"|\(|\)|,)+([^(])\)/g)[0]
+                        .toString().replaceAll(/[\n\s]/g, '')
+
+                    let chunks = eval(`
+                        const foundTests = [];
+                        ${actualTags}
+
+                        function combine(ids, tags) {
+                            ids.split(",").forEach(i => {
+                                foundTests.push({id: i, tag: tags})
+                            })
+                        }
+
+                        function TestCase(...ids) {
+                            return ids.join(",")
+                        }
+
+                        function TestCases(...ids) {
+                            return ids.join(",")
+                        }
+
+                        function Tags(...tags) {
+                            return tags.join(",")
+                        }
+
+                        function Tag(tag) {
+                            return tag
+                        }
+
+                        combine(${ids}, ${tags})
+
+                        foundTests
+                    `)
+
+                    tests.push(...chunks);
+                })
         }
     }
+
+    return formatLocalTest(tests)
+}
+
+
+function saveLocalTests(content) {
+    console.log(`Save local tests from content: ${content.substring(0, 100)}...`)
+    writeIntoFile(content.map(it => `${it.id}: ${it.tag}`).join("\n"), localTestReportPath)
+}
+
+function formatLocalTest(tests) {
+    return tests.map(t => {
+        t.tag = sortedDistinct(t.tag.split(",")
+            .map(f => getExceptOrDefault(f)))
+            .join(",")
+        return t
+    })
 }
 
 
@@ -118,54 +187,15 @@ async function getCasesIds() {
     return caseIds;
 }
 
-function prepareRenderData(actualTags, terminal) {
-    terminal.stdin.write(actualTags + "\n")
-    terminal.stdin.write(
-        "let List = require(\"collections/list\")\n" +
-        "let tests = new List()\n" +
-        "    function combine(ids, tags) {\n" +
-        "        ids.split(\",\").forEach(i => {\n" +
-        "            tests.add({id:i,tag:tags})\n" +
-        "        })\n" +
-        "    }\n" +
-        "    function TestCase(...ids) {\n" +
-        "        return ids.join(\",\")\n" +
-        "    }\n" +
-        "    function TestCases(...ids) {\n" +
-        "        return ids.join(\",\")\n" +
-        "    }\n" +
-        "    function Tags(...tags) {\n" +
-        "        return tags.join(\",\")\n" +
-        "    }\n" +
-        "    function Tag(tag) {\n" +
-        "        return tag\n" +
-        "    }\n\n")
-}
-
-function renderTests(content, terminal) {
-    [...content.matchAll(methodRegexPattern)]
-        .map(p => p.toString())
-        .filter(p => p.includes("@TestCase"))
-        .filter(p => p.includes("@Tags"))
-        .flatMap(method => {
-            let ids = method.match(/TestCases?\(.+\)/g)[0]
-            let tags = method.match(/Tags\((\n|\s|\w|"|\(|\)|,)+([^(])\)/g)[0]
-                .toString().replaceAll(/[\n\s]/g, '')
-            terminal.stdin.write('combine(' + ids + ', ' + tags + ')\n')
-        })
-}
 
 module.exports = {
     localTestReportPath,
     testCaseAnnotationPattern,
     methodRegexPattern,
     getCasesIds,
-    prepareRenderData,
-    sortedDistinct,
-    getExceptOrDefault,
-    readLocalTests,
-    parseTests,
     saveLocalTests,
     getAddedTestCases,
-    getUpdatedTestCases
+    getUpdatedTestCases,
+    getLocalTests,
+    getRemoteTests
 }

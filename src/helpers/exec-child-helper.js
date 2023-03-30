@@ -23,13 +23,15 @@ class Reader {
 }
 
 function createNodeChildProcess(childListeners) {
-    const terminal = require('child_process').spawn("/usr/local/bin/node")
+    const terminal = require('child_process').spawn("node") // /usr/local/bin/node
 
     terminal.stdout.setEncoding('utf8');
     terminal.stdout.on('data', childListeners.outDataListener);
 
     terminal.stderr.setEncoding('utf8');
     terminal.stderr.on('data', childListeners.errorDataListener);
+
+    terminal.on('error', (err) => throw err)
 
     terminal.on('close', childListeners.closeListener);
     return terminal
@@ -39,14 +41,14 @@ function spawnShell(reader, onClosure) {
     return createNodeChildProcess(
         new Listeners(
             reader,
-            code => {
+            async (code) => {
                 //Here you can get the exit code of the script
                 console.log(`Closing code:  + ${code}`);
                 // console.log(`Full output of script: '${Listeners.scriptOutput}'\nErrors: '${errorOutput}'`);
                 if (!reader.scriptOutput)
                     throw "Output is empty"
 
-                onClosure.call()
+                await onClosure.call()
             }
         ))
 }
