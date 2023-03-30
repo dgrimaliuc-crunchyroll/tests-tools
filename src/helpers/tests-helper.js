@@ -110,7 +110,6 @@ function getLocalTests(actualTagsFile) {
 
 
 function saveLocalTests(content) {
-    console.log(`Save local tests from content: ${content.substring(0, 100)}...`)
     writeIntoFile(content.map(it => `${it.id}: ${it.tag}`).join("\n"), localTestReportPath)
 }
 
