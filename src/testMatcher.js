@@ -47,7 +47,7 @@ async function createTxtReports(pathToTagsFile) {
                 unexistingTests.push(t)
             }
         })
-        writeIntoFile(unexistingTests.join("\n"), unexistingReport)
+        writeIntoFile(unexistingTests.map(it => it.id).join("\n"), unexistingReport)
     }
 
     function findTestIn(test, collection) {

@@ -136,7 +136,7 @@ async function getAddedTestCases() {
         .filter((id) => !oldCasesIds.has(id));
 }
 
-async function getUpdatedTestCases() {
+async function getAffectedTestCases() {
     const idPattern = /\d+/g;
     const changePattern = /(^|\n)[+\\-].+/gm;
     let diff = await exec("git --no-pager diff -U10000 \$(git merge-base HEAD origin/main)",
@@ -186,7 +186,7 @@ module.exports = {
     getCasesIds,
     saveLocalTests,
     getAddedTestCases,
-    getUpdatedTestCases,
+    getAffectedTestCases,
     getLocalTests,
     getRemoteTests
 }

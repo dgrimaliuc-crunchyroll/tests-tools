@@ -2,17 +2,14 @@ const {readFile} = require("./helpers/file-helper");
 const {tagReport, duplicateReport, unexistingReport} = require("./helpers/constants");
 
 async function verifyAutomatedTests() {
-    const {getUpdatedTestCases, getAddedTestCases} = require("./helpers/tests-helper.js");
+    const {getAffectedTestCases} = require("./helpers/tests-helper.js");
     const result = new Map();
 
-    let updatedTests = await getUpdatedTestCases()
-    console.log(`updatedTests: ${updatedTests}`)
-    let addedTests = await getAddedTestCases()
-    console.log(`addedTests: ${addedTests}`)
-    addedTests.push(...updatedTests)
-    verifyTags(addedTests)
-    verifyDuplicates(addedTests)
-    verifyUnexisting(addedTests)
+    let tests = await getAffectedTestCases()
+    console.log(`updatedTests: ${tests}`)
+    verifyTags(tests)
+    verifyDuplicates(tests)
+    verifyUnexisting(tests)
 
     if (result.size > 0) {
         console.log(result)

@@ -1,6 +1,6 @@
 {
   "name": "tests-tools",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "dependencies": {
     "@actions/github": "^5.1.1",
     "@dlenroc/testrail": "^1.7.2",
