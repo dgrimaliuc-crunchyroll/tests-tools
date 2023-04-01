@@ -1,5 +1,6 @@
 const {sync: glob} = require("fast-glob");
 const {readFileSync} = require("fs");
+const {getCurrentPRInfo} = require("./githubHelper");
 const {writeIntoFile, readFile} = require("./file-helper");
 const {localTestReportPath, allTestsJsonPath} = require("./constants");
 const {execSync: exec} = require('child_process');
@@ -123,18 +124,9 @@ function formatLocalTest(tests) {
 }
 
 
-async function getAddedTestCases(pr) {
-    // const github = require('@actions/github').getOctokit(process.env.GITHUB_TOKEN);
-    // const context = {
-    //     pull_number: process.env.CIRCLE_PULL_REQUEST?.match(/\d+/)?.[0],
-    //     owner: process.env.CIRCLE_PROJECT_USERNAME,
-    //     repo: process.env.CIRCLE_PROJECT_REPONAME,
-    //     branch: process.env.CIRCLE_BRANCH
-    // };
-    //
-    // if (!context.pull_number) return;
-    // const {data: pr} = await github.pulls.get(context);
+async function getAddedTestCases() {
 
+    let pr = getCurrentPRInfo()
     // Get cases ids before and after current PR
     const casesIds = await getCasesIds();
     await exec(`git -c advice.detachedHead=false checkout $(git merge-base ${pr.head.sha} origin/${pr.base.ref})`);

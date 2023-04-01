@@ -6,7 +6,9 @@ async function verifyAutomatedTests() {
     const result = new Map();
 
     let updatedTests = await getUpdatedTestCases()
+    console.log(`updatedTests: ${updatedTests}`)
     let addedTests = await getAddedTestCases()
+    console.log(`addedTests: ${addedTests}`)
     addedTests.push(...updatedTests)
     verifyTags(addedTests)
     verifyDuplicates(addedTests)
