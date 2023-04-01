@@ -123,17 +123,17 @@ function formatLocalTest(tests) {
 }
 
 
-async function getAddedTestCases() {
-    const github = require('@actions/github').getOctokit(process.env.GITHUB_TOKEN);
-    const context = {
-        pull_number: process.env.CIRCLE_PULL_REQUEST?.match(/\d+/)?.[0],
-        owner: process.env.CIRCLE_PROJECT_USERNAME,
-        repo: process.env.CIRCLE_PROJECT_REPONAME,
-        branch: process.env.CIRCLE_BRANCH
-    };
-
-    if (!context.pull_number) return;
-    const {data: pr} = await github.pulls.get(context);
+async function getAddedTestCases(pr) {
+    // const github = require('@actions/github').getOctokit(process.env.GITHUB_TOKEN);
+    // const context = {
+    //     pull_number: process.env.CIRCLE_PULL_REQUEST?.match(/\d+/)?.[0],
+    //     owner: process.env.CIRCLE_PROJECT_USERNAME,
+    //     repo: process.env.CIRCLE_PROJECT_REPONAME,
+    //     branch: process.env.CIRCLE_BRANCH
+    // };
+    //
+    // if (!context.pull_number) return;
+    // const {data: pr} = await github.pulls.get(context);
 
     // Get cases ids before and after current PR
     const casesIds = await getCasesIds();

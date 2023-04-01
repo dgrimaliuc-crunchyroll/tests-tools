@@ -2,11 +2,12 @@ const {sync: glob} = require('fast-glob');
 const fs = require('fs');
 
 function writeIntoFile(string, filePath) {
+    let folder = filePath.substring(0, filePath.lastIndexOf("/") + 1)
     console.log(`Write into file ${filePath} content: ${string.substring(0, 100)}...`)
-    if (!fs.existsSync(filePath)) {
-        fs.mkdir(filePath.substring(0, filePath.lastIndexOf("/") + 1),
+    if (!fs.existsSync(folder)) {
+        fs.mkdir(folder,
             {recursive: true},
-            (err) => console.log(err));
+            () => console.log("Warning mkdir"));
     }
     fs.writeFileSync(filePath, string, err => {
         if (err) {
