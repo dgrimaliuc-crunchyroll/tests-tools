@@ -126,7 +126,7 @@ function formatLocalTest(tests) {
 
 async function getAddedTestCases() {
 
-    let pr = getCurrentPRInfo()
+    let pr = await getCurrentPRInfo()
     // Get cases ids before and after current PR
     const casesIds = await getCasesIds();
     await exec(`git -c advice.detachedHead=false checkout $(git merge-base ${pr.head.sha} origin/${pr.base.ref})`);

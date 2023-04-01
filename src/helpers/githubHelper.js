@@ -8,9 +8,6 @@ async function getCurrentPRInfo() {
 
     const github = require('@actions/github').getOctokit(process.env.GITHUB_TOKEN);
     let response = await github.request('GET /repos/{owner}/{repo}/pulls/{pull_number}', context);
-    if (response.status !== 200) {
-        throw "Failed to get PR info: \n" + JSON.stringify(response.data)
-    }
     return response.data
 
 }
