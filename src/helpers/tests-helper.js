@@ -144,9 +144,9 @@ async function getAffectedTestCases() {
     // get all methods filter to keep only updated , get TestCase anno and retrieve id
     const ids = [...diff.matchAll(methodRegexPattern)]
         .filter(m => m[0].match(changePattern))
-        .flatMap((group) => group[0]
-            .match(testCaseAnnotationPattern)[0]
-            .match(idPattern))
+        .flatMap((group) => [...group[0]
+            .matchAll(testCaseAnnotationPattern)])
+        .map(t => t[0].match(idPattern))
         .map((groups) => +groups);
 
     return readFile(localTestReportPath)
