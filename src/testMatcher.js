@@ -1,10 +1,10 @@
-async function createTxtReports(pathToTagsFile) {
+async function createTxtReports() {
     const {getLocalTests, getRemoteTests} = require("./helpers/tests-helper");
     const {writeIntoFile} = require("./helpers/file-helper.js");
     const {saveLocalTests} = require("./helpers/tests-helper.js");
     const {tagReport, duplicateReport, unexistingReport} = require("./helpers/constants");
-    let localTests = getLocalTests(pathToTagsFile)
-    let remoteTests = getRemoteTests(pathToTagsFile)
+    let localTests = getLocalTests()
+    let remoteTests = getRemoteTests()
     createReports(localTests, remoteTests)
 
 

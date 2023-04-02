@@ -6,6 +6,7 @@ const {localTestReportPath, allTestsJsonPath} = require("./constants");
 const {execSync: exec} = require('child_process');
 const testCaseAnnotationPattern = /@?TestCases?\s*\([\s\S]*?\)/g;
 let methodRegexPattern = /[+\- ](\s*)?@[TP]\w+\s+(`?)(.+?)\2\s*\([\S\s]+?\n[+\- ]\1}/g;
+let exceptTags = new Map(Object.entries(JSON.parse(process.env.TAGS_EXCEPTIONS)))
 
 
 function sortedDistinct(arr) {
@@ -13,18 +14,7 @@ function sortedDistinct(arr) {
 }
 
 function getExceptOrDefault(tag) {
-    return new Map([
-        ["Anonymous user", "anonymousUser"],
-        ["Data Validation", "analyticsEvents"],
-        ["Data analytics", "analyticsEvents"],
-        ["vilosAndroidWebRegression", "regression"],
-        ["Regression", "regression"],
-        ["vilosRegression", "regression"],
-        ["vilosAndroidWebSmoke", "smoke"],
-        ["Smoke & Sanity", "smoke"],
-        ["vilosSmoke", "smoke"],
-        ["Share", "share"]])
-        .get(tag.trim()) ?? tag.trim()
+    return exceptTags.get(tag.trim()) ?? tag.trim()
 }
 
 function getRemoteTests() {
@@ -49,12 +39,12 @@ function getRemoteTests() {
         })
 }
 
-function getLocalTests(actualTagsFile) {
+function getLocalTests() {
     const tests = [];
 
     const commentPattern = /\/\/.+/g;
     const multilineCommentPattern = /\/\*[\s\S]*?\*\//g;
-    let actualTags = readFile(actualTagsFile).replaceAll('val ', '')
+    let actualTags = readFile(process.env.ACTUAL_TAGS_FILE).replaceAll('val ', '')
     for (const file of glob('**/*.kt')) {
         if (!file.startsWith("target/")) {
             const content = readFileSync(file, 'utf-8')
