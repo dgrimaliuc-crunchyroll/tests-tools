@@ -6,7 +6,7 @@ const {localTestReportPath, allTestsJsonPath} = require("./constants");
 const {execSync: exec} = require('child_process');
 const testCaseAnnotationPattern = /@?TestCases?\s*\([\s\S]*?\)/g;
 let methodRegexPattern = /[+\- ](\s*)?@[TP]\w+\s+(`?)(.+?)\2\s*\([\S\s]+?\n[+\- ]\1}/g;
-let exceptTags = new Map(Object.entries(JSON.parse(process.env.TAGS_EXCEPTIONS)))
+let exceptTags = new Map(Object.entries(JSON.parse(process.env.TAGS_EXCEPTIONS??"{}")))
 
 
 function sortedDistinct(arr) {
