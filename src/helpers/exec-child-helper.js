@@ -23,7 +23,7 @@ class Reader {
 }
 
 function createNodeChildProcess(childListeners) {
-    const terminal = require('child_process').spawn("node") // /usr/local/bin/node
+    const terminal = require('child_process').spawn("node");
 
     terminal.stdout.setEncoding('utf8');
     terminal.stdout.on('data', childListeners.outDataListener);
@@ -31,7 +31,7 @@ function createNodeChildProcess(childListeners) {
     terminal.stderr.setEncoding('utf8');
     terminal.stderr.on('data', childListeners.errorDataListener);
 
-    terminal.on('error', (err) => throw err)
+    terminal.on('error', (err) => console.log(err.message))
 
     terminal.on('close', childListeners.closeListener);
     return terminal
@@ -53,8 +53,49 @@ function spawnShell(reader, onClosure) {
         ))
 }
 
-module.exports = {spawnShell, Listeners, Reader}
+function spawn(instruction, spawnOpts = {}, silenceOutput = true) {
 
+    const childProcess = require("child_process");
+    return new Promise((resolve, reject) => {
+        let errorData = "";
 
+        const [command, ...args] = instruction.split(/\s+/g);
 
+        if (process.env.DEBUG_COMMANDS === "true") {
+            console.log(`Executing \`${instruction}\``);
+            console.log("Command", command, "Args", args);
+        }
 
+        const spawnedProcess = childProcess.spawn(command, args.filter(it => it !== ""), spawnOpts);
+
+        let data = "";
+
+        spawnedProcess.on("message", console.log);
+
+        spawnedProcess.stdout.on("data", chunk => {
+            if (!silenceOutput) {
+                console.log(chunk.toString());
+            }
+
+            data += chunk.toString();
+        });
+
+        spawnedProcess.stderr.on("data", chunk => {
+            errorData += chunk.toString();
+        });
+
+        spawnedProcess.on("close", function (code) {
+            if (code > 0) {
+                return reject(new Error(`${errorData} (Failed Instruction: ${instruction})`));
+            }
+
+            resolve(data);
+        });
+
+        spawnedProcess.on("error", function (err) {
+            reject(err);
+        });
+    });
+}
+
+module.exports = {spawnShell, spawn, Listeners, Reader}

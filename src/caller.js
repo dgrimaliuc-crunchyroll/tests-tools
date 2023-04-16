@@ -8,19 +8,25 @@ async function readRemoteTests() {
         password: process.env.TESTRAIL_PASSWORD
     });
 
-    const AUTOMATION_STATUS = "custom_chrome_automation_status"
+    const AUTOMATION_STATUS = "custom_automation_status"
     const FIELD_TAG = 'custom_testcase_tag';
     const projects = await api.getProjects();
-    const projectId = projects.filter(p => p.name === process.env.TESTRAIL_PROJECT_NAME)[0].id
+    const projectIdS = projects.filter(p => process.env.TESTRAIL_PROJECT_NAME.split(";")
+        .map(it => it.trim()).includes(p.name))
+        .map(it => it.id)
     const fields = await api.getCaseFields();
-    const cases = await api.getCases(projectId);
+    let cases = []
+
+    for (const projectId of projectIdS) {
+        cases = cases.concat([...await api.getCases(projectId)])
+    }
 
     const tags = new Map([...fields.find(field => field.system_name === FIELD_TAG)
         .configs[0].options.items.matchAll(/^\s*(\d+)\s*,\s*(.+)\s*/mg)].map(m => [+m[1], m[2]]));
     const types = new Map([...await api.getCaseTypes()].map(t => [+t.id, t.name]))
     const statuses = new Map([...fields.find(field => field.system_name === AUTOMATION_STATUS)
         .configs[0].options.items.matchAll(/^\s*(\d+)\s*,\s*(.+)\s*/mg)].map(t => [+t[1], t[2]]))
-        .set(null, "Not_Set")
+        .set(null, "None")
 
 
     let allTests = "[" + cases.map(c => ({
@@ -29,7 +35,7 @@ async function readRemoteTests() {
         steps: c.custom_steps ?? "",
         expected: c.custom_expected ?? "",
         title: c.title,
-        isAutomated: statuses.get(c.custom_chrome_automation_status),
+        isAutomated: statuses.get(c.custom_automation_status),
         type: types.get(c.type_id),
         runInProd: c.custom_run_in_production ?? false,
         runInCI: c.custom_ci ?? false,

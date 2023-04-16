@@ -4,9 +4,10 @@ const {getCurrentPRInfo} = require("./githubHelper");
 const {writeIntoFile, readFile} = require("./file-helper");
 const {localTestReportPath, allTestsJsonPath} = require("./constants");
 const {execSync: exec} = require('child_process');
+const {spawn} = require("./exec-child-helper");
 const testCaseAnnotationPattern = /@?TestCases?\s*\([\s\S]*?\)/g;
 let methodRegexPattern = /[+\- ](\s*)?@[TP]\w+\s+(`?)(.+?)\2\s*\([\S\s]+?\n[+\- ]\1}/g;
-let exceptTags = new Map(Object.entries(JSON.parse(process.env.TAGS_EXCEPTIONS??"{}")))
+let exceptTags = new Map(Object.entries(JSON.parse(process.env.TAGS_EXCEPTIONS ?? "{}")))
 
 
 function sortedDistinct(arr) {
@@ -44,7 +45,9 @@ function getLocalTests() {
 
     const commentPattern = /\/\/.+/g;
     const multilineCommentPattern = /\/\*[\s\S]*?\*\//g;
-    let actualTags = readFile(process.env.ACTUAL_TAGS_FILE).replaceAll('val ', '')
+    let actualTags = [...readFile(process.env.ACTUAL_TAGS_FILE).matchAll(/\w+.=.+/g)].map(it=>[
+        "let "+it.toString()
+    ]).join("\n")
     for (const file of glob('**/*.kt')) {
         if (!file.startsWith("target/")) {
             const content = readFileSync(file, 'utf-8')
@@ -129,7 +132,8 @@ async function getAddedTestCases() {
 async function getAffectedTestCases() {
     const idPattern = /\d+/g;
     const changePattern = /(^|\n)[+\\-].+/gm;
-    let diff = await exec("git --no-pager diff -U10000 \$(git merge-base HEAD origin/main)",
+    let mergeBase = await spawn("git merge-base HEAD origin/main", {'encoding': 'UTF-8'})
+    let diff = await spawn("git --no-pager diff -U10000 " + mergeBase,
         {'encoding': 'UTF-8'})
     // get all methods filter to keep only updated , get TestCase anno and retrieve id
     const ids = [...diff.matchAll(methodRegexPattern)]
