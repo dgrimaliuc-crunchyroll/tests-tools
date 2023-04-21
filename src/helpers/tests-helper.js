@@ -25,10 +25,12 @@ function getRemoteTests() {
             if (t.runInProd) {
                 addTagRes.push("production")
             }
-            if (t.runInCI) {
-                addTagRes.push("ci")
-            } else
-                addTagRes.push("notCi")
+            if (process.env.VERIFY_CI === "true") {
+                if (t.runInCI)
+                    addTagRes.push("ci")
+                else
+                    addTagRes.push("notCi")
+            }
 
             t.tags = sortedDistinct(t.tags
                 .split(",")
@@ -45,8 +47,8 @@ function getLocalTests() {
 
     const commentPattern = /\/\/.+/g;
     const multilineCommentPattern = /\/\*[\s\S]*?\*\//g;
-    let actualTags = [...readFile(process.env.ACTUAL_TAGS_FILE).matchAll(/\w+.=.+/g)].map(it=>[
-        "let "+it.toString()
+    let actualTags = [...readFile(process.env.ACTUAL_TAGS_FILE).matchAll(/\w+.=.+/g)].map(it => [
+        "let " + it.toString()
     ]).join("\n")
     for (const file of glob('**/*.kt')) {
         if (!file.startsWith("target/")) {
