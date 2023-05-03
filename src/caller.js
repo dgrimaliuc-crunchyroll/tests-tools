@@ -35,7 +35,7 @@ async function readRemoteTests() {
         steps: c.custom_steps ?? "",
         expected: c.custom_expected ?? "",
         title: c.title,
-        isAutomated: statuses.get(c.custom_automation_status),
+        isAutomated: statuses.get(c.custom_automation_status) ?? false,
         type: types.get(c.type_id),
         runInProd: c.custom_run_in_production ?? false,
         runInCI: c.custom_ci ?? false,

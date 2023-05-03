@@ -12,16 +12,16 @@ async function verifyAutomatedTests() {
     verifyDuplicates(tests)
     verifyUnexisting(tests)
 
+    if (process.env.NOTIFY_FAILURES === "true") {
+        let testPath = `${process.env.TESTRAIL_HOST}/index.php?/cases/view`;
+        let formattedResult = [...result.entries()]
+            .map((k) => k[0].replaceAll(/(.+)/g, `[${k[0]}](${testPath}/${k[0]})`) + "\n" +
+                [...new Set(k[1])].map(it => ` * ${it}`).join("\n"))
+            .join("\n\n")
+        await notifyFailures(formattedResult)
+    }
     if (result.size > 0) {
         console.log(result)
-        if (process.env.NOTIFY_FAILURES) {
-            let testPath = `${process.env.TESTRAIL_HOST}/index.php?/cases/view`;
-            let formattedResult = [...result.entries()]
-                .map((k) => k[0].replaceAll(/(.+)/g, `[${k[0]}](${testPath}/${k[0]})`) + "\n" +
-                    [...new Set(k[1])].map(it => ` * ${it}`).join("\n"))
-                .join("\n\n")
-            await notifyFailures(formattedResult)
-        }
         throw new Error("Found test mistakes")
     }
 
