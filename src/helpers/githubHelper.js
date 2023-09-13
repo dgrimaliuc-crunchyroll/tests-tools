@@ -51,4 +51,4 @@ async function findComment() {
   return comment;
 }
 
-module.exports = { getCurrentPRInfo, notifyFailures, removeFailuresIfExists };
+module.exports = { getCurrentPRInfo, notifyFailures };
