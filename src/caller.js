@@ -43,25 +43,21 @@ async function readRemoteTests() {
     ].map((t) => [+t[1], t[2]])
   ).set(null, 'None');
 
-  let allTests =
-    '[' +
-    cases
-      .map((c) => ({
-        id: c.id,
-        precondition: c.custom_preconds ?? '',
-        steps: c.custom_steps ?? '',
-        expected: c.custom_expected ?? '',
-        title: c.title,
-        isAutomated: statuses.get(c.custom_automation_status) ?? false,
-        type: types.get(c.type_id),
-        runInProd: c.custom_run_in_production ?? false,
-        runInCI: c.custom_ci ?? false,
-        refs: (c.refs ? c.refs : '').replace(/,/g, ';'),
-        tags: (c[FIELD_TAG] || []).map((id) => tags.get(id)).join(', '),
-      }))
-      .map((test) => toJson(test))
-      .join(',\n') +
-    ']';
+  let allTests = JSON.stringify(
+    cases.map((c) => ({
+      id: c.id,
+      precondition: c.custom_preconds ?? '',
+      steps: c.custom_steps ?? '',
+      expected: c.custom_expected ?? '',
+      title: c.title,
+      isAutomated: statuses.get(c.custom_automation_status) ?? false,
+      type: types.get(c.type_id),
+      runInProd: c.custom_run_in_production ?? false,
+      runInCI: c.custom_ci ?? false,
+      refs: (c.refs ? c.refs : '').replace(/,/g, ';'),
+      tags: (c[FIELD_TAG] || []).map((id) => tags.get(id)).join(', '),
+    }))
+  );
   writeIntoFile(allTests, allTestsJsonPath);
 }
 

@@ -35,6 +35,7 @@ function getRemoteTests() {
       t.tags = sortedDistinct(
         t.tags
           .split(',')
+          .filter((it) => it)
           .concat(addTagRes)
           .map((f) => getExceptOrDefault(f))
       ).join(',');
@@ -181,6 +182,35 @@ async function getCasesIds() {
   return caseIds;
 }
 
+async function addTag(tests, tag) {
+  const TestRail = require('@dlenroc/testrail');
+  const api = new TestRail({
+    host: process.env.TESTRAIL_HOST,
+    username: process.env.TESTRAIL_USERNAME,
+    password: process.env.TESTRAIL_PASSWORD,
+  });
+  const FIELD_TAG = 'custom_testcase_tag';
+  const fields = await api.getCaseFields();
+  const tags = new Map(
+    [
+      ...fields
+        .find((field) => field.system_name === FIELD_TAG)
+        .configs[0].options.items.matchAll(/^\s*(\d+)\s*,\s*(.+)\s*/gm),
+    ].map((m) => [+m[1], m[2]])
+  );
+  const tagId = [...tags].find((g) => g[1] === tag)[0];
+
+  let cases = await api.getCases(83);
+  for (const test of tests) {
+    let prevTags = cases.find((it) => it.id === test).custom_testcase_tag;
+    prevTags.push(tagId);
+
+    await api.updateCase(test, {
+      custom_testcase_tag: [...new Set(prevTags)],
+    });
+  }
+}
+
 module.exports = {
   localTestReportPath,
   testCaseAnnotationPattern,
@@ -191,4 +221,5 @@ module.exports = {
   getAffectedTestCases,
   getLocalTests,
   getRemoteTests,
+  addTag,
 };
