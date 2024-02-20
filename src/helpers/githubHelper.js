@@ -1,4 +1,4 @@
-const github = require('@actions/github').getOctokit(process.env.GITHUB_TOKEN);
+const githubAction = require('@actions/github');
 const context = {
   repo: process.env.CIRCLE_PROJECT_REPONAME,
   owner: process.env.CIRCLE_PROJECT_USERNAME,
@@ -6,6 +6,7 @@ const context = {
 };
 
 async function getCurrentPRInfo() {
+  const github = githubAction.getOctokit(process.env.GITHUB_TOKEN);
   let response = await github.request(
     'GET /repos/{owner}/{repo}/pulls/{pull_number}',
     context
@@ -14,6 +15,7 @@ async function getCurrentPRInfo() {
 }
 
 async function notifyFailures(body) {
+  const github = githubAction.getOctokit(process.env.GITHUB_TOKEN);
   const commentId = `<!--< Comment from ${process.env.CIRCLE_JOB} job >-->`;
   const comment = await findComment();
   const summary = `${commentId}\n${body}`;
@@ -43,6 +45,7 @@ async function notifyFailures(body) {
 }
 
 async function findComment() {
+  const github = githubAction.getOctokit(process.env.GITHUB_TOKEN);
   const comments = await github.rest.issues.listComments(context);
   const commentId = `<!--< Comment from ${process.env.CIRCLE_JOB} job >-->`;
   const comment = comments.data.find(

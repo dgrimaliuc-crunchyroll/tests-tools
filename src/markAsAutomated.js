@@ -11,7 +11,7 @@ async function updateTestStatus() {
   // Get cases ids before and after current PR
   const casesIds = await getCasesIds();
   // Requires that merged PR are squashed
-  await exec(`git reset --hard  HEAD~1`);
+  exec(`git reset --hard  HEAD~1`);
   const oldCasesIds = await getCasesIds();
 
   // Determine cases that were introduced
@@ -46,23 +46,31 @@ async function updateTestStatus() {
   }
 
   async function markRemoved(tests) {
-    tests.forEach((t) => {
-      api.updateCase(t, {
-        custom_testcase_automated: '0',
+    tests.forEach(async (t) => {
+      try {
+        await api.updateCase(t, {
+          custom_testcase_automated: '0',
 
-        custom_automation_status: 5,
-        custom_chrome_automation_status: 9,
-        custom_safari_automation_status: 9,
-        custom_firefox_automation_status: 9,
-        custom_edge_automation_status: 9,
+          custom_automation_status: 5,
+          custom_chrome_automation_status: 9,
+          custom_safari_automation_status: 9,
+          custom_firefox_automation_status: 9,
+          custom_edge_automation_status: 9,
 
-        custom_android_web_automation_status: 14,
-        custom_ios_web_automation_status: 14,
-        custom_ipad_web_automation_status: 14,
-        custom_tablet_web_automation_status: 14,
+          custom_android_web_automation_status: 14,
+          custom_ios_web_automation_status: 14,
+          custom_ipad_web_automation_status: 14,
+          custom_tablet_web_automation_status: 14,
 
-        custom_automationttcid: t.toString(),
-      });
+          custom_automationttcid: t.toString(),
+        });
+      } catch (e) {
+        if (e.message.indexOf('is not a valid test case') === -1) {
+          throw e;
+        } else {
+          console.log(`Test case ${t} doesn't exist, probably it is removed`);
+        }
+      }
     });
   }
 }
